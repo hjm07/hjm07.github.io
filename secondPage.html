@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>소원권 사용하기</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            overflow: hidden;
+        }
+        .ticket, .memory {
+            position: absolute;
+            padding: 10px 20px;
+            background-color: #ff6347;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: transform 0.2s ease, background-color 0.5s ease, box-shadow 0.3s ease;
+        }
+        .ticket:hover, .memory:hover {
+            transform: scale(1.1);
+        }
+        .message {
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+        .final-message {
+            font-size: 2em;
+            color: #4CAF50;
+            font-weight: bold;
+            margin-top: 50px;
+            white-space: pre-wrap;
+        }
+        .reset-button {
+            position: fixed;
+            bottom: 20px;
+            padding: 12px 25px;
+            font-size: 1.2em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            max-width: 90%;
+            width: 300px;
+        }
+        .reset-button:hover {
+            background-color: #45a049;
+        }
+        /* 모바일 최적화 */
+        @media (max-width: 768px) {
+            .message {
+                font-size: 1.2em;
+            }
+            .ticket, .memory {
+                font-size: 1em;
+                padding: 8px 15px;
+            }
+            .reset-button {
+                font-size: 1em;
+                padding: 10px 20px;
+                max-width: 80%;
+            }
+            .final-message {
+                font-size: 1.5em;
+                margin-top: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>소원권 사용하기!</h1>
+    <p class="message">소원권을 사용할 수 있어요!</p>
+
+    <button class="reset-button" onclick="resetLocalStorage()">소원 사용내역 초기화</button>
+
+    <script>
+        const totalTickets = 20; // 총 티켓 개수
+        const tickets = []; // 티켓 위치 정보 배열 (겹치지 않도록)
+        let ticketsFound = 0; // 사용자가 찾은 티켓 개수
+
+        // 화면 크기와 티켓 크기 설정
+        const ticketWidth = 150; // 티켓의 가로 크기
+        const ticketHeight = 50; // 티켓의 세로 크기
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+
+        // 소원권 상태를 로컬 스토리지에서 가져오기 (기본값: 비어 있음)
+        let usedTickets = JSON.parse(localStorage.getItem('usedTickets')) || [];
+
+        // 티켓 요소를 생성하고 랜덤 위치에 배치하는 함수
+        function createTicket(ticketId) {
+            let positionFound = false;
+            let x, y;
+
+            // 겹치지 않도록 랜덤 위치 계산
+            while (!positionFound) {
+                x = Math.random() * (screenWidth - ticketWidth); // 화면 너비 내에서 랜덤
+                y = Math.random() * (screenHeight - ticketHeight); // 화면 높이 내에서 랜덤
+
+                // 다른 티켓과 겹치는지 확인
+                positionFound = !tickets.some(ticket => {
+                    return x < ticket.x + ticketWidth && x + ticketWidth > ticket.x &&
+                           y < ticket.y + ticketHeight && y + ticketHeight > ticket.y;
+                });
+            }
+
+            // 티켓 객체 추가
+            tickets.push({ x, y });
+
+            const ticket = document.createElement('div');
+            ticket.classList.add('ticket');
+            ticket.innerText = `소원권 ${ticketId}`;
+
+            // 랜덤 위치 설정
+            ticket.style.left = `${x}px`;
+            ticket.style.top = `${y}px`;
+
+            // 소원권을 이미 사용했다면, 그 티켓은 추억으로 표시
+            const usedTicket = usedTickets.find(ticket => ticket.id === ticketId);
+            if (usedTicket) {
+                ticket.classList.remove('ticket');
+                ticket.classList.add('memory');
+                ticket.innerText = "추억으로 변했습니다!";
+                ticket.style.cursor = 'pointer';  // 클릭 가능하도록
+                ticket.style.backgroundColor = usedTicket.color;
+                ticket.style.boxShadow = `0 4px 12px ${usedTicket.color}`;
+            }
+
+            // 티켓 클릭 시 동작
+            ticket.addEventListener('click', () => {
+                if (usedTickets.some(item => item.id === ticketId)) {
+                    // 이미 사용한 소원권은 추억 페이지로 이동
+                    window.location.href = `memory.html?id=${ticketId}`;  // 추억 페이지로 이동
+                    return;
+                }
+
+                if (confirm('소원권을 사용하시겠습니까?')) {
+                    useMemory(ticket, ticketId);  // 소원권을 사용하여 추억으로 변경
+                    ticketsFound++;  // 티켓 사용 카운트 증가
+                    if (ticketsFound === totalTickets) {
+                        showFinalMessage(); // 모든 소원권을 사용하면 최종 메시지 표시
+                    }
+                }
+            });
+
+            document.body.appendChild(ticket);
+        }
+
+        // 소원권을 사용하면 색상과 스타일을 아름다운 추억으로 변경하는 함수
+        function useMemory(ticket, ticketId) {
+            // 랜덤한 색상 배열
+            const colors = [
+                '#ff7f50', '#ff6347', '#ff1493', '#ffd700', '#98fb98', 
+                '#20b2aa', '#f0e68c', '#ff4500', '#9370db', '#adff2f'
+            ];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+            // 추억 모양으로 변경 (배경색, 그림자, 크기 등)
+            ticket.classList.remove('ticket');  // 기존 'ticket' 클래스 제거
+            ticket.classList.add('memory');     // 'memory' 클래스로 변경
+            ticket.style.backgroundColor = randomColor;  // 랜덤한 색상 적용
+            ticket.style.boxShadow = `0 4px 12px ${randomColor}`;  // 아름다운 그림자 추가
+            ticket.innerText = "추억으로 변했습니다!";
+            ticket.style.cursor = 'pointer';  // 클릭 가능하도록 유지
+
+            // 로컬 스토리지에 추억 상태 기록
+            usedTickets.push({ id: ticketId, color: randomColor });
+            localStorage.setItem('usedTickets', JSON.stringify(usedTickets));  // 로컬 스토리지에 저장
+        }
+
+        // 최종 메시지 출력 (모든 소원권을 사용한 후)
+        function showFinalMessage() {
+            const message = document.createElement('div');
+            message.classList.add('final-message');
+            message.innerText = `이렇게 많은 일이 있었다니!\n사랑해요ㅓㅓ`;
+            document.body.appendChild(message);
+        }
+
+        // 로컬 스토리지 초기화 함수
+        function resetLocalStorage() {
+            if (confirm('정말로 로컬 스토리지를 초기화하시겠습니까?')) {
+                localStorage.removeItem('usedTickets'); // 로컬 스토리지의 usedTickets 항목 삭제
+                usedTickets = [];  // 로컬 변수 초기화
+                ticketsFound = 0;  // 티켓 찾은 개수 초기화
+                alert('로컬 스토리지가 초기화되었습니다.');
+                location.reload();  // 페이지 새로고침 (초기 상태로 돌아감)
+            }
+        }
+
+        // 티켓 생성 (20개)
+        for (let i = 1; i <= totalTickets; i++) {
+            createTicket(i);
+        }
+    </script>
+
+</body>
+</html>

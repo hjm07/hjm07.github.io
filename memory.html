@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>추억 페이지</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        .memory-content {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 400px;
+            margin-top: 20px;
+        }
+        .memory-header {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #ff6347;
+        }
+        .memory-text {
+            font-size: 1.2em;
+            color: #555;
+        }
+        .input-container {
+            margin-top: 20px;
+        }
+        input[type="file"] {
+            padding: 5px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        .image-preview {
+            margin-top: 10px;
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .save-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .save-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="memory-header">추억의 순간</h1>
+
+    <div class="memory-content">
+        <p class="memory-text" id="memory-text">여기 추억이 남아있어요ㅓ.</p>
+        <p id="ticket-id"></p>
+
+        <!-- 사진 업로드 -->
+        <div class="input-container">
+            <label for="imageUpload">추억의 사진을 업로드하세요:</label><br>
+            <input type="file" id="imageUpload" accept="image/*">
+            <img id="imagePreview" class="image-preview" src="" alt="사진 미리보기" style="display: none;">
+        </div>
+
+        <!-- 메모 입력 -->
+        <div class="input-container">
+            <label for="memoryNote">메모를 작성하세요:</label><br>
+            <textarea id="memoryNote" placeholder="메모를 작성하세요..."></textarea>
+        </div>
+
+        <!-- 저장 버튼 -->
+        <button class="save-button" id="saveButton">저장하기</button>
+    </div>
+
+    <script>
+        // URL 파라미터에서 'id' 값을 가져오기
+        const urlParams = new URLSearchParams(window.location.search);
+        const ticketId = urlParams.get('id');
+
+        // 페이지에 해당 소원권 ID를 표시
+        document.getElementById('ticket-id').textContent = `소원권 ${ticketId}의 추억`;
+
+        // 추억에 관련된 텍스트 동적으로 변경
+        const memoryText = document.getElementById('memory-text');
+        memoryText.textContent = `소원권 ${ticketId}을(를) 사용한 당신의 추억이 남았습니다.`;
+
+        // 사진 업로드 처리
+        const imageUpload = document.getElementById('imageUpload');
+        const imagePreview = document.getElementById('imagePreview');
+
+        imageUpload.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';  // 미리보기 이미지 표시
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 메모 저장 처리
+        const saveButton = document.getElementById('saveButton');
+        saveButton.addEventListener('click', function() {
+            const memoryNote = document.getElementById('memoryNote').value;
+            const imageUrl = imagePreview.src;
+
+            // 로컬 스토리지에 저장
+            localStorage.setItem(`memoryNote_${ticketId}`, memoryNote);
+            localStorage.setItem(`memoryImage_${ticketId}`, imageUrl);
+
+            alert('추억이 저장되었습니다!');
+        });
+
+        // 페이지 로드 시 저장된 메모와 이미지 불러오기
+        window.onload = function() {
+            const savedNote = localStorage.getItem(`memoryNote_${ticketId}`);
+            const savedImage = localStorage.getItem(`memoryImage_${ticketId}`);
+
+            if (savedNote) {
+                document.getElementById('memoryNote').value = savedNote;
+            }
+
+            if (savedImage) {
+                imagePreview.src = savedImage;
+                imagePreview.style.display = 'block';  // 미리보기 이미지 표시
+            }
+        };
+    </script>
+
+</body>
+</html>

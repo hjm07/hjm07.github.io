@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>히힣</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            position: relative; /* 버튼을 고정하기 위해 필요한 스타일 */
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+        .poem {
+            font-size: 1.3em;
+            color: #333;
+            line-height: 1.8;
+            white-space: pre-wrap; /* Preserve line breaks */
+        }
+        .next-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            display: block; /* 항상 보이게 설정 */
+            z-index: 100; /* 다른 요소 위에 뜨도록 */
+        }
+        .next-btn:hover {
+            background-color: #45a049;
+        }
+        /* 모바일 대응 */
+        @media (max-width: 600px) {
+            .poem {
+                font-size: 1.1em; /* 모바일 화면에 맞게 글자 크기 조정 */
+            }
+            .next-btn {
+                font-size: 1em;  /* 모바일에서는 버튼 크기 줄이기 */
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="poem" id="poem"></div>
+    </div>
+    
+    <!-- 우측 상단에 항상 보이는 '다음 페이지' 버튼 -->
+    <button class="next-btn" id="nextButton" onclick="window.location.href='secondPage.html'">다음 페이지로</button>
+
+    <script>
+        // 시 내용 (줄바꿈 포함)
+        const poemLines = [
+            "처음 누나를 만났을 때,",
+            "갓 태어난 아기 강아지가 된 것 같았어.",
+            "처음보는 세상 앞에서,",
+            "내 모든 발걸음엔 비틀거리는 당참이 있었지.",
+            "",
+            "누나는 그 작은 강아지가",
+            "세상을 향해 무작정 다가갈 때,",
+            "기어코 처음 본 사람을 동반자로 인식할 때,",
+            "덥썩 받아줬지.",
+            "서로 아는 것 없는 상황에도 귀엽게 전진하는 모습일까",
+            "",
+            "그런 자기를 보며,",
+            "내 마음은 그후로도 점점 커지지는 중이지만,",
+            "그만큼 불안함도 자꾸 자라.",
+            "정말 갓 태어난 강아지처럼",
+            "무작정 다가가려하지만 넘어질까봐 두려운 것 같아.",
+            "",
+            "그치만",
+            "자기 덕분에 그 작은 강아지가",
+            "매번 불안해하면서도 한 발짝씩 나아가고 있어.",
+            "",
+            "내가 넘어지면 달려와줄 것처럼",
+            "정많고 이쁘고 귀여운 사람이니까.",
+            "항상 잘해준다고 익숙해지면 안되니까",
+            "계속 비틀거리면서 당차게 나아갈게.",
+            "내 앞에 하나만 있는 것처럼.",
+            "",
+            "고마워,",
+            "내게 와줘서.",
+            "그리고 사랑해,",
+            "내 불안한 마음을 받아줘서."
+        ];
+
+        let currentLine = 0;
+        const poemElement = document.getElementById("poem");
+        const nextButton = document.getElementById("nextButton");
+
+        // 타이핑 효과 함수
+        function typePoem() {
+            if (currentLine < poemLines.length) {
+                let line = poemLines[currentLine];
+                let index = 0;
+
+                // 한 줄씩 타이핑 효과 적용
+                function typeLine() {
+                    if (index < line.length) {
+                        poemElement.innerHTML += line.charAt(index);
+                        index++;
+                        setTimeout(typeLine, 80); // 80ms 간격으로 한 글자씩 타이핑
+                    } else {
+                        currentLine++;
+                        poemElement.innerHTML += "<br>"; // 줄 바꿈
+                        setTimeout(typePoem, 500); // 다음 줄 타이핑 전에 잠시 대기
+                    }
+                }
+
+                typeLine();
+            }
+        }
+
+        // 페이지 로드 시 타이핑 시작
+        window.onload = typePoem;
+    </script>
+
+</body>
+</html>
